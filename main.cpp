@@ -8,6 +8,10 @@ int kek(int a) {
     return a + 1;
 }
 
+int ifunc(int b) {
+    return b - 1;
+}
+
 void funky(void) {
     std::cout << "Hello!" << std::endl;
 }
@@ -38,6 +42,17 @@ int main(int argc, char* argv[]) {
     func::function<void()> kekus(funky);
 
     kekus();
+
+    func::function<void(int)> alala;
+
+    if(!alala)
+        std::cout << "function is empty" << std::endl;
+
+    aboba.reset();
+    aboba(1);
+
+
+    // alala(0);
 
     return 0;
 }

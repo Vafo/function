@@ -38,6 +38,11 @@ class function;
 template<typename R, typename ...Args>
 class function<R(Args...)> {
 public:
+
+    /*Default Constructor*/
+    function() {/*is there need to assign m_owner_ptr (?)*/}
+
+    /*Constructor with initializer*/
     template<typename func_Type>
     function(
         func_Type target
@@ -49,8 +54,49 @@ public:
         )
     {}
 
+    /*Copy-constructor*/
+    function(
+        function& other
+    ): m_owner_ptr(other.m_owner_ptr) {}
+
+    /*Assignment operator - object of same kind as receiving object*/
+    function& operator=(function other) {
+        swap(*this, other);
+        return *this;
+    }
+
+    /*Assignment operator - object of function for target member*/
+    template<typename func_Type>
+    function& operator=(func_Type new_target) {
+        m_owner_ptr.reset(
+            std::make_unique< function_owner<func_Type, R, Args...> >(new_target)
+        );
+        return *this;
+    }
+
+    /*Execute target*/
     R operator()(Args... args) {
+        if(!m_owner_ptr) /*if m_owner_ptr does not point to valid data*/
+            throw std::logic_error("function target is empty");
+
         return (*m_owner_ptr)(args...);
+    }
+
+    /*Conversion to bool - is it filled with valid func or not*/
+    explicit operator bool() {
+        return static_cast<bool>(m_owner_ptr);
+    }
+
+    /*Empty the function*/
+    void reset() {
+        m_owner_ptr.reset();
+    }
+
+    // template<> /*is template<> needed (?)*/
+    friend void swap(function& a, function& b) {
+        using std::swap;
+
+        swap(a.m_owner_ptr, b.m_owner_ptr);
     }
 
 private:
