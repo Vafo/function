@@ -10,14 +10,22 @@ int zero_func() {
     return 0;
 }
 
-class Functor {
+int addition(int a, int b) {
+    return a + b;
+}
 
+class Functor {
+public:
     int operator()() {
         return 1;
     }
 
+    int operator()(int a, int b) {
+        return a - b;
+    }
+
     /*increment every element*/
-    void operator(std::vector<int>& ivec) {
+    void operator()(std::vector<int>& ivec) {
         for(
             std::vector<int>::iterator beg = ivec.begin();
             beg != ivec.end();
@@ -35,32 +43,59 @@ TEST_CASE("function default construction", "[function][constructor]") {
 
 TEST_CASE("function copy construction", "[function][constructor]") {
     const int const_val = 2;
-    function<int(int)> afunc = [] (int a) { return a + 1 };
+    function<int(int)> afunc ([] (int a) -> int { return a + 1; });
     
-    REQUIRE_NO_THROW(afunc(const_val));
-    REQUIRES(afunc(const_val) == const_val + 1);
+    REQUIRE_NOTHROW(afunc(const_val));
+    REQUIRE(afunc(const_val) == const_val + 1);
     
     function<int(int)> bfunc = afunc;
 
-    REQUIRE_NO_THROW(bfunc(const_val));
-    REQUIRES(bfunc(const_val) == const_val + 1);
+    REQUIRE_NOTHROW(bfunc(const_val));
+    REQUIRE(bfunc(const_val) == const_val + 1);
 }
 
 TEST_CASE("function assignment", "[function][assignment]") {
     function<int()> afunc = zero_func;
-    function<int()> bfunc = Functor;
+    function<int()> bfunc = Functor();
     function<int()> tmpfunc;
 
-    REQUIRES(afunc() == 0);
-    REQUIRES(bfunc() == 1);
+    REQUIRE(afunc() == 0);
+    REQUIRE(bfunc() == 1);
 
     /*intentional swap*/
-    REQUIRE_NO_THROW(tmpfunc = afunc);
-    REQUIRE_NO_THROW(afunc = bfunc);
-    REQUIRE_NO_THROW(bfunc = tmpfunc);
+    REQUIRE_NOTHROW(tmpfunc = afunc);
+    REQUIRE_NOTHROW(afunc = bfunc);
+    REQUIRE_NOTHROW(bfunc = tmpfunc);
 
-    REQUIRES(afunc() == 1);
-    REQUIRES(bfunc() == 0);
+    REQUIRE(afunc() == 1);
+    REQUIRE(bfunc() == 0);
+}
+
+TEST_CASE("function validity", "[function]") {
+    function<int(int, int)> some_func;
+
+    REQUIRE( static_cast<bool>(some_func) == false );
+
+    some_func = addition;
+    REQUIRE( static_cast<bool>(some_func) == true );
+
+    REQUIRE(some_func(1, 2) == 3);
+}
+
+int apply_func(int arg1, int arg2, function<int(int, int)> func) {
+    return func(arg1, arg2);
+}
+
+TEST_CASE("function as parameter", "[function]") {
+    function<int(int, int)> classic_func = addition; /*addition*/
+    function<int(int, int)> functor_func = Functor(); /*difference*/
+    function<int(int, int)> lambda_func = [] (int a, int b) -> int {return a * b;}; /*multiplication*/
+
+    const int arg1 = 5, arg2 = 12;
+
+    REQUIRE(apply_func(arg1, arg2, classic_func) == arg1 + arg2);
+    REQUIRE(apply_func(arg1, arg2, functor_func) == arg1 - arg2);
+    REQUIRE(apply_func(arg1, arg2, lambda_func) == arg1 * arg2);
 }
 
 }; // namespace func

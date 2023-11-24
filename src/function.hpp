@@ -9,7 +9,7 @@ template<typename R, typename ...Args>
 class function_owner_int {
 public:
     virtual R operator()(Args... args) = 0;
-
+    virtual std::unique_ptr< function_owner_int > clone() = 0;
 };
 
 template<typename funcType, typename R, typename ...Args>
@@ -22,6 +22,10 @@ public:
 
     R operator()(Args... args) {
         return m_func(args...);
+    }
+
+    std::unique_ptr< function_owner_int<R, Args...> > clone() {
+        return std::make_unique< function_owner >(*this);
     }
 
 private:
@@ -56,8 +60,10 @@ public:
 
     /*Copy-constructor*/
     function(
-        function& other
-    ): m_owner_ptr(other.m_owner_ptr) {}
+        const function& other
+    ): m_owner_ptr(
+        other.m_owner_ptr->clone()
+    ) {}
 
     /*Assignment operator - object of same kind as receiving object*/
     function& operator=(function other) {
@@ -68,11 +74,16 @@ public:
     /*Assignment operator - object of function for target member*/
     template<typename func_Type>
     function& operator=(func_Type new_target) {
-        m_owner_ptr.reset(
-            std::make_unique< function_owner<func_Type, R, Args...> >(new_target)
-        );
+        assign(new_target);
         return *this;
     }
+
+    /*Same as assignment operator*/
+    template<typename func_Type>
+    void assign(func_Type new_target) {
+        m_owner_ptr = std::make_unique< function_owner<func_Type, R, Args...> >(new_target);
+    }
+
 
     /*Execute target*/
     R operator()(Args... args) {
