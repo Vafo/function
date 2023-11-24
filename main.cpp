@@ -35,9 +35,9 @@ int main(int argc, char* argv[]) {
     lolus(ivec);
     std::cout << std::endl;
 
-    func::function<void(int)> kekus(funky);
+    func::function<void()> kekus(funky);
 
-    kekus(0);
+    kekus();
 
     return 0;
 }

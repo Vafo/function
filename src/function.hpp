@@ -5,23 +5,23 @@
 
 namespace func {
 
-template<typename R, typename A1>
+template<typename R, typename ...Args>
 class function_owner_int {
 public:
-    virtual R operator()(A1 arg1) = 0;
+    virtual R operator()(Args... args) = 0;
 
 };
 
-template<typename funcType, typename R, typename A1>
-class function_owner: public function_owner_int<R, A1> {
+template<typename funcType, typename R, typename ...Args>
+class function_owner: public function_owner_int<R, Args...> {
 
 public:
     function_owner(funcType func):
         m_func(func)
     {}
 
-    R operator()(A1 arg) {
-        return m_func(arg);
+    R operator()(Args... args) {
+        return m_func(args...);
     }
 
 private:
@@ -35,27 +35,26 @@ class function;
 
 /*Template specialization*/
 /*Used to extract func sinature argument types and return type*/
-template<typename R, typename A1>
-class function<R(A1)> {
-
+template<typename R, typename ...Args>
+class function<R(Args...)> {
 public:
     template<typename func_Type>
     function(
         func_Type target
     ):
         m_owner_ptr( 
-            std::make_unique< function_owner<func_Type, R, A1> >(
+            std::make_unique< function_owner<func_Type, R, Args...> >(
                 target
             )
         )
     {}
 
-    R operator()(A1 arg) {
-        return (*m_owner_ptr)(arg);
+    R operator()(Args... args) {
+        return (*m_owner_ptr)(args...);
     }
 
 private:
-    std::unique_ptr< function_owner_int<R, A1> > m_owner_ptr;
+    std::unique_ptr< function_owner_int<R, Args...> > m_owner_ptr;
 };
 
 }; // namespace func
