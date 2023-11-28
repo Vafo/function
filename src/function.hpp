@@ -8,8 +8,8 @@ namespace func {
 template<typename R, typename ...Args>
 class function_owner_int {
 public:
-    virtual R operator()(Args... args) = 0;
-    virtual std::unique_ptr< function_owner_int > clone() = 0;
+    virtual R operator()(Args... args) const = 0;
+    virtual std::unique_ptr< function_owner_int > clone() const = 0;
 
     virtual ~function_owner_int() {};
 };
@@ -22,18 +22,19 @@ public:
         m_func(func)
     {}
 
-    R operator()(Args... args) {
+    R operator()(Args... args) const {
         return m_func(args...);
     }
 
-    std::unique_ptr< function_owner_int<R, Args...> > clone() {
+    /*compiler does not argue if clone is called from const function_owner*/
+    std::unique_ptr< function_owner_int<R, Args...> > clone() const {
         return std::make_unique< function_owner >(*this);
     }
 
     ~function_owner() {}
 
 private:
-    funcType m_func;
+    mutable funcType m_func;
 };
 
 
@@ -89,7 +90,7 @@ public:
 
 
     /*Execute target*/
-    R operator()(Args... args) {
+    R operator()(Args... args) const {
         if(!m_owner_ptr) /*if m_owner_ptr does not point to valid data*/
             throw std::logic_error("function target is empty");
 
@@ -97,7 +98,7 @@ public:
     }
 
     /*Conversion to bool - is it filled with valid func or not*/
-    explicit operator bool() {
+    explicit operator bool() const {
         return static_cast<bool>(m_owner_ptr);
     }
 

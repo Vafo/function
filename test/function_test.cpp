@@ -82,7 +82,7 @@ TEST_CASE("function validity", "[function]") {
     REQUIRE(some_func(1, 2) == 3);
 }
 
-int apply_func(int arg1, int arg2, function<int(int, int)> func) {
+int apply_func(int arg1, int arg2, const function<int(int, int)>& func) {
     return func(arg1, arg2);
 }
 
@@ -96,6 +96,16 @@ TEST_CASE("function as parameter", "[function]") {
     REQUIRE(apply_func(arg1, arg2, classic_func) == arg1 + arg2);
     REQUIRE(apply_func(arg1, arg2, functor_func) == arg1 - arg2);
     REQUIRE(apply_func(arg1, arg2, lambda_func) == arg1 * arg2);
+}
+
+TEST_CASE("const function", "[function]") {
+    const function<int(int, int)> const_func = addition;
+    function<int(int, int)> other_func = const_func;
+
+    const int arg1 = 5, arg2 = 12;
+
+    REQUIRE(const_func(arg1, arg2) == arg1 + arg2);
+    REQUIRE(other_func(arg1, arg2) == arg1 + arg2);
 }
 
 }; // namespace func
