@@ -108,4 +108,19 @@ TEST_CASE("const function", "[function]") {
     REQUIRE(other_func(arg1, arg2) == arg1 + arg2);
 }
 
+TEST_CASE("function with object arguments", "[function]") {
+    function<void(std::vector<int>&)> vec_incr = Functor();
+    
+    const int N = 5;
+    const int init_val = 0;
+    std::vector<int> ivec(N);
+    std::iota(ivec.begin(), ivec.end(), init_val);
+    
+    std::vector<int> ivec_test(N);
+    std::iota(ivec_test.begin(), ivec_test.end(), init_val + 1);
+
+    REQUIRE_NOTHROW(vec_incr(ivec));
+    REQUIRE_THAT(ivec, Catch::Matchers::RangeEquals(ivec_test));
+}
+
 }; // namespace func
