@@ -1,7 +1,11 @@
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_library(function_impl function.cpp)
+if( NOT TARGET function_impl )
 
-target_include_directories(function_impl PUBLIC .)
+    add_library(function_impl INTERFACE)
 
-target_link_libraries(function_impl compiler_flags)
+    target_include_directories(function_impl INTERFACE .)
+
+    # target_link_libraries(function_impl compiler_flags)
+    
+endif()

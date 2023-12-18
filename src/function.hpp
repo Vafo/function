@@ -2,6 +2,7 @@
 #define FUNCTION_H
 
 #include <memory>
+#include <stdexcept>
 
 namespace func {
 
